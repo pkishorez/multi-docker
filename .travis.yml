@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t kishoreiiitn/multi-docker -f ./client/Dockerfile.dev ./client/
+
+script:
+  - docker run kishoreiiitn/multi-docker npm run test -- --coverage
+
+after_success:
+  - docker build -t kishoreiiitn/multidocker-client -f ./client/Dockerfile ./client
+  - docker build -t kishoreiiitn/multidocker-nginx -f ./client/Dockerfile ./nginx
+  - docker build -t kishoreiiitn/multidocker-worker -f ./client/Dockerfile ./worker
+  - docker build -t kishoreiiitn/multidocker-server -f ./server/Dockerfile ./server
+  # Take these images and push to docker hub.
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push kishoreiiitn/multidocker-client
+  - docker push kishoreiiitn/multidocker-nginx
+  - docker push kishoreiiitn/multidocker-server
+  - docker push kishoreiiitn/multidocker-worker
